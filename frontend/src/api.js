@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:5001/api";
+const API_BASE =
+  process.env.REACT_APP_API_BASE || "https://assignment2-app-ae32.onrender.com/api";
 
 export const getToken = () => localStorage.getItem("token");
 
