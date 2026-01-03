@@ -12,11 +12,16 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   "http://localhost:3000",
   "https://pasangrumba.github.io",
+  "https://pasangrumba.github.io/Assignment2-App",
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      allowedOrigins.some((allowed) => origin?.startsWith(allowed))
+    ) {
       return callback(null, true);
     }
     return callback(new Error("Not allowed by CORS"));
