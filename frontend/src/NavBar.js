@@ -1,56 +1,84 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { assetsApi, setToken } from "./api";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { authApi, setToken } from "./api";
 
 function NavBar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [user, setUser] = useState(null);
 
   const handleLogout = () => {
     setToken(null);
     navigate("/");
   };
 
-  const handleReset = async () => {
-    const confirmed = window.confirm(
-      "This will delete all of your assets (drafts and published). Continue?"
-    );
-    if (!confirmed) {
-      return;
-    }
+  useEffect(() => {
+    authApi
+      .me()
+      .then((data) => setUser(data.user))
+      .catch(() => setUser(null));
+  }, []);
 
-    try {
-      await assetsApi.resetMine();
-      navigate(0);
-    } catch (err) {
-      alert(err.message || "Failed to reset assets.");
-    }
-  };
+  const initials = useMemo(() => {
+    if (!user?.name) return "U";
+    return user.name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }, [user]);
+
+  const navItems = [
+    { to: "/dashboard", label: "Dashboard", icon: "🏠" },
+    { to: "/assets/new", label: "Create Asset", icon: "📝" },
+    { to: "/library", label: "Library", icon: "📚" },
+  ];
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-      <Link className="navbar-brand" to="/dashboard">
-        MWCD Knowledge Hub
-      </Link>
-      <div className="navbar-nav">
-        <Link className="nav-link" to="/dashboard">
-          Dashboard
-        </Link>
-        <Link className="nav-link" to="/assets/new">
-          Create Asset
-        </Link>
-        <Link className="nav-link" to="/library">
-          Library
-        </Link>
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <div className="brand-mark">DKN</div>
+        <div className="brand-text">
+          <div className="brand-title">Digital Knowledge</div>
+          <div className="brand-subtitle">Network System</div>
+        </div>
       </div>
-      <div className="ms-auto d-flex gap-2">
-        <button className="btn btn-outline-warning btn-sm" onClick={handleReset}>
-          Reset Assets
+      <nav className="sidebar-nav">
+        {navItems.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={`sidebar-link ${
+              location.pathname.startsWith(item.to) ? "active" : ""
+            }`}
+          >
+            <span className="sidebar-icon" aria-hidden>
+              {item.icon}
+            </span>
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+      <div className="sidebar-footer">
+        <button
+          className="sidebar-profile"
+          onClick={() => navigate("/profile")}
+          type="button"
+        >
+          <span className="profile-avatar">{initials}</span>
+          <div className="profile-meta">
+            <div className="profile-name">{user?.name || "Profile"}</div>
+            <div className="profile-email text-muted small">
+              {user?.email || "View details"}
+            </div>
+          </div>
         </button>
-        <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
-          Log Out
+        <button className="btn btn-outline-light btn-sm w-100" onClick={handleLogout}>
+          <span aria-hidden>↩</span> Log Out
         </button>
       </div>
-    </nav>
+    </aside>
   );
 }
 

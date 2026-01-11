@@ -8,6 +8,7 @@ const governanceRoutes = require("./components/governance/governance.routes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || "127.0.0.1";
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -50,6 +51,6 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "Server error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });

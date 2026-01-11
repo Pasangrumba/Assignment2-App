@@ -28,6 +28,14 @@ function Validation(values) {
         error.password = ""
     }
 
+    if(values.confirmPassword === "") {
+        error.confirmPassword = "Please confirm your password"
+    } else if(values.password !== values.confirmPassword) {
+        error.confirmPassword = "Passwords do not match"
+    } else {
+        error.confirmPassword = ""
+    }
+
     return error;
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import { assetsApi } from "./api";
 
@@ -8,6 +8,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const loadAssets = () => {
     setLoading(true);
@@ -27,6 +29,13 @@ function Dashboard() {
     loadAssets();
   }, []);
 
+  useEffect(() => {
+    if (location.state?.actionMessage) {
+      setActionMessage(location.state.actionMessage);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
+
   const handleSubmit = (assetId) => {
     setActionMessage("");
     assetsApi
@@ -40,16 +49,42 @@ function Dashboard() {
       });
   };
 
+  const handleDelete = (assetId) => {
+    const confirmed = window.confirm(
+      "Delete this draft? This cannot be undone."
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setActionMessage("");
+    assetsApi
+      .deleteDraft(assetId)
+      .then(() => {
+        setActionMessage("Draft deleted.");
+        loadAssets();
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
+  };
+
   return (
-    <div>
+    <div className="app-shell">
       <NavBar />
-      <div className="container py-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h2 className="h4 mb-0">Your Knowledge Assets</h2>
-          <Link className="btn btn-primary btn-sm" to="/assets/new">
-            Create Draft
-          </Link>
-        </div>
+      <div className="app-main">
+        <div className="container py-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h2 className="h4 mb-0">Digital Knowledge Network System Dashboard</h2>
+              <div className="text-muted small">
+                Manage your knowledge assets across the network.
+              </div>
+            </div>
+            <Link className="btn btn-primary btn-sm" to="/assets/new">
+              Create Draft
+            </Link>
+          </div>
 
         {loading && <p>Loading assets...</p>}
         {error && <div className="alert alert-danger">{error}</div>}
@@ -84,12 +119,26 @@ function Dashboard() {
                         View
                       </Link>
                       {asset.status === "Draft" && (
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleSubmit(asset.id)}
-                        >
-                          Submit for Review
-                        </button>
+                        <>
+                          <Link
+                            className="btn btn-outline-primary btn-sm me-2"
+                            to={`/assets/${asset.id}/edit`}
+                          >
+                            Edit Draft
+                          </Link>
+                          <button
+                            className="btn btn-outline-danger btn-sm me-2"
+                            onClick={() => handleDelete(asset.id)}
+                          >
+                            Delete Draft
+                          </button>
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleSubmit(asset.id)}
+                          >
+                            Submit for Review
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -100,6 +149,7 @@ function Dashboard() {
         </div>
       </div>
     </div>
+  </div>
   );
 }
 

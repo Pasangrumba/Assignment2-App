@@ -7,6 +7,8 @@ import CreateAsset from "./CreateAsset";
 import Library from "./Library";
 import AssetDetail from "./AssetDetail";
 import RequireAuth from "./RequireAuth";
+import EditAsset from "./EditAsset";
+import Profile from "./Profile";
 
 function App() {
   return (
@@ -39,10 +41,26 @@ function App() {
           }
         />
         <Route
+          path="/assets/:id/edit"
+          element={
+            <RequireAuth>
+              <EditAsset />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/library"
           element={
             <RequireAuth>
               <Library />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <Profile />
             </RequireAuth>
           }
         />

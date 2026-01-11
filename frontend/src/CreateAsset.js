@@ -3,11 +3,23 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import { assetsApi, tagsApi } from "./api";
 
-const TAG_TYPES = ["Industry", "Capability", "Region", "DeliverableType"];
+const TAG_TYPES = [
+  "Industry",
+  "Capability",
+  "Region",
+  "DeliverableType",
+  "AssetType",
+  "AccessLevel",
+];
 
 function CreateAsset() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: "", description: "" });
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    keywords: "",
+    sourceUrl: "",
+  });
   const [tagsByType, setTagsByType] = useState({});
   const [selectedTags, setSelectedTags] = useState({});
   const [loading, setLoading] = useState(true);
@@ -49,6 +61,8 @@ function CreateAsset() {
         title: form.title.trim(),
         description: form.description.trim(),
         tagIds,
+        keywords: form.keywords.trim() || undefined,
+        sourceUrl: form.sourceUrl.trim() || undefined,
       })
       .then(() => {
         navigate("/dashboard");
@@ -60,9 +74,10 @@ function CreateAsset() {
   };
 
   return (
-    <div>
+    <div className="app-shell">
       <NavBar />
-      <div className="container py-4">
+      <div className="app-main">
+        <div className="container py-4">
         <h2 className="h4 mb-3">Create Knowledge Asset</h2>
         {loading && <p>Loading tags...</p>}
         {error && <div className="alert alert-danger">{error}</div>}
@@ -88,6 +103,30 @@ function CreateAsset() {
                 value={form.description}
                 onChange={handleChange}
                 required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Keywords</label>
+              <input
+                name="keywords"
+                className="form-control"
+                placeholder="e.g. logistics, AI ops, middleware"
+                value={form.keywords}
+                onChange={handleChange}
+              />
+              <div className="form-text">
+                Comma-separated terms to improve discovery.
+              </div>
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Source URL (optional)</label>
+              <input
+                name="sourceUrl"
+                type="url"
+                className="form-control"
+                placeholder="https://example.com/resource"
+                value={form.sourceUrl}
+                onChange={handleChange}
               />
             </div>
 
@@ -119,6 +158,7 @@ function CreateAsset() {
             </button>
           </form>
         )}
+      </div>
       </div>
     </div>
   );

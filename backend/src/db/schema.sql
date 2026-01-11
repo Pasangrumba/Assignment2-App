@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS knowledge_assets (
   description TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'Draft',
   owner_user_id INTEGER NOT NULL,
+  keywords TEXT,
+  source_url TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (owner_user_id) REFERENCES users (id)
 );
@@ -54,4 +56,12 @@ INSERT OR IGNORE INTO metadata_tags (tag_type, tag_value) VALUES
   ('Region', 'Global'),
   ('DeliverableType', 'Report'),
   ('DeliverableType', 'Prototype'),
-  ('DeliverableType', 'API');
+  ('DeliverableType', 'API'),
+  ('AssetType', 'Template'),
+  ('AssetType', 'Report'),
+  ('AssetType', 'Playbook'),
+  ('AssetType', 'Code'),
+  ('AssetType', 'Slide Deck'),
+  ('AccessLevel', 'Internal'),
+  ('AccessLevel', 'Client-Restricted'),
+  ('AccessLevel', 'Public');

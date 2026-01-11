@@ -36,9 +36,10 @@ function AssetDetail() {
   };
 
   return (
-    <div>
+    <div className="app-shell">
       <NavBar />
-      <div className="container py-4">
+      <div className="app-main">
+        <div className="container py-4">
         {loading && <p>Loading asset...</p>}
         {error && <div className="alert alert-danger">{error}</div>}
         {actionMessage && (
@@ -53,6 +54,24 @@ function AssetDetail() {
               <p>
                 <span className="badge bg-secondary">{asset.status}</span>
               </p>
+              {(asset.keywords || asset.source_url) && (
+                <div className="mb-3">
+                  {asset.keywords && (
+                    <div>
+                      <strong>Keywords:</strong>{" "}
+                      <span className="text-muted">{asset.keywords}</span>
+                    </div>
+                  )}
+                  {asset.source_url && (
+                    <div>
+                      <strong>Source:</strong>{" "}
+                      <a href={asset.source_url} target="_blank" rel="noreferrer">
+                        {asset.source_url}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
               <h6>Metadata</h6>
               {asset.tags.length === 0 && (
                 <p className="text-muted">No metadata tags assigned.</p>
@@ -75,6 +94,7 @@ function AssetDetail() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

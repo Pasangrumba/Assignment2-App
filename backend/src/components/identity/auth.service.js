@@ -5,6 +5,11 @@ const { get, run } = require("../../db/db");
 const JWT_SECRET = process.env.JWT_SECRET || "mwcd_coursework2_dev_secret";
 const JWT_EXPIRES_IN = "2h";
 
+const signUserToken = (user) =>
+  jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
+
 const register = async ({ name, email, password }) => {
   const existing = await get("SELECT id FROM users WHERE email = ?", [email]);
   if (existing) {
@@ -40,13 +45,47 @@ const login = async ({ email, password }) => {
     throw error;
   }
 
-  const token = jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+  const token = signUserToken(user);
 
   return { token, user: { id: user.id, name: user.name, email: user.email } };
+};
+
+const updateProfile = async ({ userId, name, email, password }) => {
+  const existing = await get(
+    "SELECT id FROM users WHERE email = ? AND id != ?",
+    [email, userId]
+  );
+  if (existing) {
+    const error = new Error("Email already registered");
+    error.status = 400;
+    throw error;
+  }
+
+  let passwordHash = null;
+  if (password) {
+    passwordHash = await bcrypt.hash(password, 10);
+  }
+
+  if (passwordHash) {
+    await run(
+      "UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?",
+      [name, email, passwordHash, userId]
+    );
+  } else {
+    await run("UPDATE users SET name = ?, email = ? WHERE id = ?", [
+      name,
+      email,
+      userId,
+    ]);
+  }
+
+  const updatedUser = await get(
+    "SELECT id, name, email FROM users WHERE id = ?",
+    [userId]
+  );
+
+  const token = signUserToken(updatedUser);
+  return { user: updatedUser, token };
 };
 
 const authenticate = (req, res, next) => {
@@ -87,6 +126,7 @@ const authenticateOptional = (req, _res, next) => {
 module.exports = {
   register,
   login,
+  updateProfile,
   authenticate,
   authenticateOptional,
 };

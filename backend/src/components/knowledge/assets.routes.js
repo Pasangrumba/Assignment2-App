@@ -6,6 +6,8 @@ const {
   getAssetById,
   submitForReview,
   REQUIRED_TAG_TYPES,
+  deleteDraft,
+  updateDraft,
   resetAssetsByOwner,
 } = require("./assets.service");
 const { authenticate, authenticateOptional } = require("../identity/auth.service");
@@ -53,7 +55,7 @@ router.get("/:id", authenticateOptional, async (req, res) => {
 
 router.post("/", authenticate, async (req, res) => {
   try {
-    const { title, description, tagIds } = req.body;
+    const { title, description, tagIds, keywords, sourceUrl } = req.body;
     if (!title || !description) {
       return res
         .status(400)
@@ -67,6 +69,8 @@ router.post("/", authenticate, async (req, res) => {
       tagIds: Array.isArray(tagIds)
         ? tagIds.map((id) => Number(id)).filter(Boolean)
         : [],
+      keywords: keywords ? String(keywords).trim() : null,
+      sourceUrl: sourceUrl ? String(sourceUrl).trim() : null,
     });
 
     return res.status(201).json({ assetId });
@@ -87,6 +91,45 @@ router.post("/:id/submit", authenticate, async (req, res) => {
         .status(err.status || 400)
         .json({ error: message, missing: err.missing, required: REQUIRED_TAG_TYPES });
     }
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.delete("/:id", authenticate, async (req, res) => {
+  try {
+    const assetId = Number(req.params.id);
+    await deleteDraft(assetId, req.user.id);
+    return res.json({ message: "Draft deleted" });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.put("/:id", authenticate, async (req, res) => {
+  try {
+    const assetId = Number(req.params.id);
+    const { title, description, tagIds, keywords, sourceUrl } = req.body;
+
+    if (!title || !description) {
+      return res.status(400).json({ error: "Title and description are required" });
+    }
+
+    const normalizedTagIds = Array.isArray(tagIds)
+      ? tagIds.map((id) => Number(id)).filter(Boolean)
+      : [];
+
+    await updateDraft({
+      assetId,
+      ownerUserId: req.user.id,
+      title: String(title).trim(),
+      description: String(description).trim(),
+      tagIds: normalizedTagIds,
+      keywords: keywords ? String(keywords).trim() : null,
+      sourceUrl: sourceUrl ? String(sourceUrl).trim() : null,
+    });
+
+    return res.json({ message: "Draft updated" });
+  } catch (err) {
     return res.status(err.status || 500).json({ error: err.message });
   }
 });

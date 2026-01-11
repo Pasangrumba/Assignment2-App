@@ -1,5 +1,13 @@
-const API_BASE =
-  process.env.REACT_APP_API_BASE || "https://assignment2-app-ae32.onrender.com/api";
+const API_BASE = (() => {
+  if (process.env.REACT_APP_API_BASE) {
+    return process.env.REACT_APP_API_BASE;
+  }
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    return "http://127.0.0.1:5000/api";
+  }
+  return "https://assignment2-app-ae32.onrender.com/api";
+})();
 
 export const getToken = () => localStorage.getItem("token");
 
@@ -47,6 +55,12 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  me: () => request("/auth/me"),
+  updateMe: (payload) =>
+    request("/auth/me", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
 };
 
 export const tagsApi = {
@@ -61,6 +75,15 @@ export const assetsApi = {
     request("/assets", {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+  updateDraft: (id, payload) =>
+    request(`/assets/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  deleteDraft: (id) =>
+    request(`/assets/${id}`, {
+      method: "DELETE",
     }),
   resetMine: () =>
     request("/assets/reset", {
