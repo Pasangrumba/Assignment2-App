@@ -29,6 +29,16 @@ Backend:
 4. API runs on `http://localhost:5000` (or the port you set).
 5. If the schema changes, run `node src/db/reset_db.js` to rebuild the SQLite database with the latest DKN tables and columns.
 
+Frontend environment:
+- Local dev: `frontend/.env.local` points to `http://localhost:5000/api` (ignored by git).
+- Production build/deploy: `frontend/.env.production` points to `https://assignment2-app-ae32.onrender.com/api` for gh-pages.
+
+Deploy to GitHub Pages:
+1. `cd frontend`
+2. `npm install` (first time)
+3. `npm run deploy` (uses `.env.production`, builds, and publishes to `gh-pages`)
+4. Push branches when network is available: `git push origin main` and `git push origin gh-pages`
+
 Frontend:
 1. `cd frontend`
 2. `npm install`
