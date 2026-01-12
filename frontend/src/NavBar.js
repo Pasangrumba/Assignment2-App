@@ -72,6 +72,11 @@ function NavBar() {
             <div className="profile-email text-muted small">
               {user?.email || "View details"}
             </div>
+            {(user?.role || user?.region) && (
+              <div className="text-muted small">
+                {[user?.role, user?.region].filter(Boolean).join(" · ")}
+              </div>
+            )}
           </div>
         </button>
         <button className="btn btn-outline-light btn-sm w-100" onClick={handleLogout}>

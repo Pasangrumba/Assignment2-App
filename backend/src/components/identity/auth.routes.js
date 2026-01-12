@@ -1,5 +1,11 @@
 const express = require("express");
-const { register, login, authenticate, updateProfile } = require("./auth.service");
+const {
+  register,
+  login,
+  authenticate,
+  updateProfile,
+  getUserProfile,
+} = require("./auth.service");
 
 const router = express.Router();
 
@@ -37,12 +43,31 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/me", authenticate, (req, res) => {
-  return res.json({ user: req.user });
+  getUserProfile(req.user.id)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      return res.json({ user });
+    })
+    .catch(() => res.status(500).json({ error: "Failed to load user" }));
 });
 
 router.put("/me", authenticate, async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role,
+      region,
+      languages,
+      availability,
+      skills,
+      domains,
+      certifications,
+      currentProjects,
+    } = req.body;
     if (!name || !email) {
       return res.status(400).json({ error: "Name and email are required" });
     }
@@ -51,6 +76,14 @@ router.put("/me", authenticate, async (req, res) => {
       name: String(name).trim(),
       email: String(email).trim().toLowerCase(),
       password: password ? String(password) : null,
+      role: role ? String(role) : null,
+      region: region ? String(region) : null,
+      languages: languages || null,
+      availability: availability ? String(availability) : null,
+      skills: skills || null,
+      domains: domains || null,
+      certifications: certifications || null,
+      currentProjects: currentProjects || null,
     });
     return res.json(payload);
   } catch (err) {

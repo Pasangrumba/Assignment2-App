@@ -55,12 +55,27 @@ router.get("/:id", authenticateOptional, async (req, res) => {
 
 router.post("/", authenticate, async (req, res) => {
   try {
-    const { title, description, tagIds, keywords, sourceUrl } = req.body;
+    const {
+      title,
+      description,
+      tagIds,
+      keywords,
+      sourceUrl,
+      assetType,
+      confidentiality,
+      sourceProjectId,
+      workspaceId,
+      versionMajor,
+      versionMinor,
+    } = req.body;
     if (!title || !description) {
       return res
         .status(400)
         .json({ error: "Title and description are required" });
     }
+
+    const parsedVersionMajor = Number(versionMajor);
+    const parsedVersionMinor = Number(versionMinor);
 
     const assetId = await createAsset({
       title: String(title).trim(),
@@ -71,6 +86,12 @@ router.post("/", authenticate, async (req, res) => {
         : [],
       keywords: keywords ? String(keywords).trim() : null,
       sourceUrl: sourceUrl ? String(sourceUrl).trim() : null,
+      assetType: assetType ? String(assetType).trim() : null,
+      confidentiality: confidentiality ? String(confidentiality).trim() : null,
+      sourceProjectId: sourceProjectId ? String(sourceProjectId).trim() : null,
+      workspaceId: workspaceId ? Number(workspaceId) : null,
+      versionMajor: Number.isFinite(parsedVersionMajor) ? parsedVersionMajor : 1,
+      versionMinor: Number.isFinite(parsedVersionMinor) ? parsedVersionMinor : 0,
     });
 
     return res.status(201).json({ assetId });
@@ -108,7 +129,19 @@ router.delete("/:id", authenticate, async (req, res) => {
 router.put("/:id", authenticate, async (req, res) => {
   try {
     const assetId = Number(req.params.id);
-    const { title, description, tagIds, keywords, sourceUrl } = req.body;
+    const {
+      title,
+      description,
+      tagIds,
+      keywords,
+      sourceUrl,
+      assetType,
+      confidentiality,
+      sourceProjectId,
+      workspaceId,
+      versionMajor,
+      versionMinor,
+    } = req.body;
 
     if (!title || !description) {
       return res.status(400).json({ error: "Title and description are required" });
@@ -118,6 +151,9 @@ router.put("/:id", authenticate, async (req, res) => {
       ? tagIds.map((id) => Number(id)).filter(Boolean)
       : [];
 
+    const parsedVersionMajor = Number(versionMajor);
+    const parsedVersionMinor = Number(versionMinor);
+
     await updateDraft({
       assetId,
       ownerUserId: req.user.id,
@@ -126,6 +162,12 @@ router.put("/:id", authenticate, async (req, res) => {
       tagIds: normalizedTagIds,
       keywords: keywords ? String(keywords).trim() : null,
       sourceUrl: sourceUrl ? String(sourceUrl).trim() : null,
+      assetType: assetType ? String(assetType).trim() : null,
+      confidentiality: confidentiality ? String(confidentiality).trim() : null,
+      sourceProjectId: sourceProjectId ? String(sourceProjectId).trim() : null,
+      workspaceId: workspaceId ? Number(workspaceId) : null,
+      versionMajor: Number.isFinite(parsedVersionMajor) ? parsedVersionMajor : 1,
+      versionMinor: Number.isFinite(parsedVersionMinor) ? parsedVersionMinor : 0,
     });
 
     return res.json({ message: "Draft updated" });

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
-import { assetsApi, tagsApi } from "./api";
+import { assetsApi, tagsApi, workspacesApi } from "./api";
 
 const TAG_TYPES = [
   "Industry",
@@ -19,23 +19,36 @@ function CreateAsset() {
     description: "",
     keywords: "",
     sourceUrl: "",
+    assetType: "",
+    confidentiality: "",
+    sourceProjectId: "",
+    workspaceId: "",
+    versionMajor: 1,
+    versionMinor: 0,
   });
   const [tagsByType, setTagsByType] = useState({});
   const [selectedTags, setSelectedTags] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [workspaces, setWorkspaces] = useState([]);
 
   useEffect(() => {
-    tagsApi
-      .list()
-      .then((data) => {
-        const grouped = (data.tags || []).reduce((acc, tag) => {
+    Promise.all([tagsApi.list(), workspacesApi.list()])
+      .then(([tagData, workspaceData]) => {
+        const grouped = (tagData.tags || []).reduce((acc, tag) => {
           acc[tag.tag_type] = acc[tag.tag_type] || [];
           acc[tag.tag_type].push(tag);
           return acc;
         }, {});
         setTagsByType(grouped);
+        setWorkspaces(workspaceData.workspaces || []);
+        if ((workspaceData.workspaces || []).length > 0) {
+          setForm((prev) => ({
+            ...prev,
+            workspaceId: String(workspaceData.workspaces[0].id),
+          }));
+        }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -55,6 +68,15 @@ function CreateAsset() {
     setSaving(true);
 
     const tagIds = TAG_TYPES.map((type) => selectedTags[type]).filter(Boolean);
+    const assetTypeTag = (tagsByType.AssetType || []).find(
+      (tag) => String(tag.id) === String(selectedTags.AssetType)
+    );
+    const accessLevelTag = (tagsByType.AccessLevel || []).find(
+      (tag) => String(tag.id) === String(selectedTags.AccessLevel)
+    );
+
+    const parsedVersionMajor = Number(form.versionMajor);
+    const parsedVersionMinor = Number(form.versionMinor);
 
     assetsApi
       .create({
@@ -63,6 +85,13 @@ function CreateAsset() {
         tagIds,
         keywords: form.keywords.trim() || undefined,
         sourceUrl: form.sourceUrl.trim() || undefined,
+        assetType: form.assetType.trim() || assetTypeTag?.tag_value,
+        confidentiality:
+          form.confidentiality.trim() || accessLevelTag?.tag_value || undefined,
+        sourceProjectId: form.sourceProjectId.trim() || undefined,
+        workspaceId: form.workspaceId || undefined,
+        versionMajor: Number.isFinite(parsedVersionMajor) ? parsedVersionMajor : 1,
+        versionMinor: Number.isFinite(parsedVersionMinor) ? parsedVersionMinor : 0,
       })
       .then(() => {
         navigate("/dashboard");
@@ -128,6 +157,102 @@ function CreateAsset() {
                 value={form.sourceUrl}
                 onChange={handleChange}
               />
+            </div>
+
+            <div className="row g-3">
+              <div className="col-12 col-md-6">
+                <label className="form-label">Asset Type</label>
+                <select
+                  className="form-select"
+                  name="assetType"
+                  value={form.assetType}
+                  onChange={handleChange}
+                >
+                  <option value="">Use metadata selection</option>
+                  {(tagsByType.AssetType || []).map((tag) => (
+                    <option key={tag.id} value={tag.tag_value}>
+                      {tag.tag_value}
+                    </option>
+                  ))}
+                </select>
+                <div className="form-text">
+                  DKN knowledge asset type (falls back to the AssetType tag).
+                </div>
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label">Confidentiality</label>
+                <select
+                  className="form-select"
+                  name="confidentiality"
+                  value={form.confidentiality}
+                  onChange={handleChange}
+                >
+                  <option value="">Use AccessLevel tag</option>
+                  {(tagsByType.AccessLevel || []).map((tag) => (
+                    <option key={tag.id} value={tag.tag_value}>
+                      {tag.tag_value}
+                    </option>
+                  ))}
+                </select>
+                <div className="form-text">
+                  Access rules for the KnowledgeAsset record.
+                </div>
+              </div>
+            </div>
+
+            <div className="row g-3 mt-1">
+              <div className="col-12 col-md-6">
+                <label className="form-label">Workspace</label>
+                <select
+                  className="form-select"
+                  name="workspaceId"
+                  value={form.workspaceId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select workspace</option>
+                  {workspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label">Source Project ID</label>
+                <input
+                  name="sourceProjectId"
+                  className="form-control"
+                  placeholder="e.g. PRJ-2048"
+                  value={form.sourceProjectId}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="row g-3 mt-1">
+              <div className="col-12 col-md-6">
+                <label className="form-label">Version Major</label>
+                <input
+                  type="number"
+                  min="0"
+                  name="versionMajor"
+                  className="form-control"
+                  value={form.versionMajor}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label">Version Minor</label>
+                <input
+                  type="number"
+                  min="0"
+                  name="versionMinor"
+                  className="form-control"
+                  value={form.versionMinor}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
 
             {TAG_TYPES.map((type) => (

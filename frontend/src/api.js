@@ -67,6 +67,10 @@ export const tagsApi = {
   list: () => request("/tags"),
 };
 
+export const workspacesApi = {
+  list: () => request("/workspaces"),
+};
+
 export const assetsApi = {
   listPublished: () => request("/assets"),
   listMine: () => request("/assets/mine"),
@@ -101,4 +105,9 @@ export const governanceApi = {
       method: "POST",
       body: JSON.stringify({ comments }),
     }),
+};
+
+export const recommendationsApi = {
+  list: (workspaceId) =>
+    request(`/recommendations${workspaceId ? `?workspaceId=${workspaceId}` : ""}`),
 };

@@ -16,12 +16,30 @@ const createAsset = async ({
   tagIds,
   keywords,
   sourceUrl,
+  assetType,
+  confidentiality,
+  sourceProjectId,
+  workspaceId,
+  versionMajor,
+  versionMinor,
 }) => {
   await run("BEGIN TRANSACTION");
   try {
     const assetResult = await run(
-      "INSERT INTO knowledge_assets (title, description, status, owner_user_id, keywords, source_url) VALUES (?, ?, 'Draft', ?, ?, ?)",
-      [title, description, ownerUserId, keywords || null, sourceUrl || null]
+      "INSERT INTO knowledge_assets (title, description, status, owner_user_id, keywords, source_url, asset_type, confidentiality, source_project_id, workspace_id, version_major, version_minor) VALUES (?, ?, 'Draft', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        title,
+        description,
+        ownerUserId,
+        keywords || null,
+        sourceUrl || null,
+        assetType || null,
+        confidentiality || null,
+        sourceProjectId || null,
+        workspaceId || null,
+        versionMajor || 1,
+        versionMinor || 0,
+      ]
     );
 
     if (Array.isArray(tagIds) && tagIds.length > 0) {
@@ -43,14 +61,22 @@ const createAsset = async ({
 
 const listPublishedAssets = async () => {
   const assets = await all(
-    "SELECT id, title, description, status, created_at, keywords, source_url FROM knowledge_assets WHERE status = 'Published' ORDER BY created_at DESC"
+    `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ws.name as workspace_name
+     FROM knowledge_assets ka
+     LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
+     WHERE ka.status = 'Published'
+     ORDER BY ka.created_at DESC`
   );
   return assets;
 };
 
 const listAssetsByOwner = async (ownerUserId) => {
   const assets = await all(
-    "SELECT id, title, description, status, created_at, keywords, source_url FROM knowledge_assets WHERE owner_user_id = ? ORDER BY created_at DESC",
+    `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ws.name as workspace_name
+     FROM knowledge_assets ka
+     LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
+     WHERE ka.owner_user_id = ?
+     ORDER BY ka.created_at DESC`,
     [ownerUserId]
   );
   return assets;
@@ -58,7 +84,10 @@ const listAssetsByOwner = async (ownerUserId) => {
 
 const getAssetById = async (assetId) => {
   const asset = await get(
-    "SELECT id, title, description, status, owner_user_id, created_at, keywords, source_url FROM knowledge_assets WHERE id = ?",
+    `SELECT ka.id, ka.title, ka.description, ka.status, ka.owner_user_id, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ws.name as workspace_name
+     FROM knowledge_assets ka
+     LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
+     WHERE ka.id = ?`,
     [assetId]
   );
   if (!asset) {
@@ -156,6 +185,12 @@ const updateDraft = async ({
   tagIds,
   keywords,
   sourceUrl,
+  assetType,
+  confidentiality,
+  sourceProjectId,
+  workspaceId,
+  versionMajor,
+  versionMinor,
 }) => {
   await run("BEGIN TRANSACTION");
   try {
@@ -183,8 +218,20 @@ const updateDraft = async ({
     }
 
     await run(
-      "UPDATE knowledge_assets SET title = ?, description = ?, keywords = ?, source_url = ? WHERE id = ?",
-      [title, description, keywords || null, sourceUrl || null, assetId]
+      "UPDATE knowledge_assets SET title = ?, description = ?, keywords = ?, source_url = ?, asset_type = ?, confidentiality = ?, source_project_id = ?, workspace_id = ?, version_major = ?, version_minor = ?, version_updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [
+        title,
+        description,
+        keywords || null,
+        sourceUrl || null,
+        assetType || null,
+        confidentiality || null,
+        sourceProjectId || null,
+        workspaceId || null,
+        versionMajor || 1,
+        versionMinor || 0,
+        assetId,
+      ]
     );
 
     await run("DELETE FROM asset_tags WHERE asset_id = ?", [assetId]);

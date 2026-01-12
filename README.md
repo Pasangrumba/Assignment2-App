@@ -9,6 +9,7 @@ Assignment2-App is a component-based mobile web application developed for Course
 - REST API communication between frontend and backend
 - Knowledge asset submission with metadata tagging
 - Governance workflow for asset review and management
+- Digital Knowledge Network (DKN) type model alignment with user profiles, expertise profiles, workspaces, versioned knowledge assets, recommendations, and integration events
 
 ## Technology Stack
 - Frontend: React (mobile-first UI)
@@ -24,8 +25,9 @@ Assignment2-App is a component-based mobile web application developed for Course
 Backend:
 1. `cd backend`
 2. `npm install`
-3. `npm start`
-4. API runs on `http://localhost:5000`
+3. `npm start` (defaults to port 5000). If macOS ControlCenter still occupies 5000, stop it or run `PORT=5001 npm start`.
+4. API runs on `http://localhost:5000` (or the port you set).
+5. If the schema changes, run `node src/db/reset_db.js` to rebuild the SQLite database with the latest DKN tables and columns.
 
 Frontend:
 1. `cd frontend`

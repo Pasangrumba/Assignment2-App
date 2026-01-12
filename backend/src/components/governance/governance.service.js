@@ -1,6 +1,12 @@
 const { get, run } = require("../../db/db");
 
-const approveAsset = async ({ assetId, actorUserId, comments }) => {
+const approveAsset = async ({
+  assetId,
+  actorUserId,
+  comments,
+  outcome = "Approved",
+  issues = [],
+}) => {
   const asset = await get(
     "SELECT id, status FROM knowledge_assets WHERE id = ?",
     [assetId]
@@ -25,8 +31,20 @@ const approveAsset = async ({ assetId, actorUserId, comments }) => {
       [assetId]
     );
     await run(
-      "INSERT INTO governance_actions (asset_id, action, actor_user_id, comments) VALUES (?, 'Approved', ?, ?)",
-      [assetId, actorUserId, comments || null]
+      "INSERT INTO governance_actions (asset_id, action, actor_user_id, comments, outcome, issues, reviewer_user_id) VALUES (?, 'Approved', ?, ?, ?, ?, ?)",
+      [
+        assetId,
+        actorUserId,
+        comments || null,
+        outcome || "Approved",
+        Array.isArray(issues) ? JSON.stringify(issues) : null,
+        actorUserId,
+      ]
+    );
+
+    await run(
+      "INSERT INTO integration_events (source_system, payload_hash) VALUES (?, ?)",
+      ["governance", `asset:${assetId}:outcome:${outcome}`]
     );
     await run("COMMIT");
   } catch (err) {

@@ -34,6 +34,26 @@ function Library() {
                   <div className="card-body">
                     <h5 className="card-title mb-1">{asset.title}</h5>
                     <p className="card-text text-muted">{asset.description}</p>
+                    <div className="d-flex flex-wrap gap-2 mb-2">
+                      {asset.asset_type && (
+                        <span className="badge bg-info text-dark">
+                          {asset.asset_type}
+                        </span>
+                      )}
+                      {asset.confidentiality && (
+                        <span className="badge bg-warning text-dark">
+                          {asset.confidentiality}
+                        </span>
+                      )}
+                      <span className="badge bg-dark">
+                        v{asset.version_major ?? 1}.{asset.version_minor ?? 0}
+                      </span>
+                      {asset.workspace_name && (
+                        <span className="badge bg-light text-dark">
+                          {asset.workspace_name}
+                        </span>
+                      )}
+                    </div>
                     <Link
                       className="btn btn-outline-primary btn-sm"
                       to={`/assets/${asset.id}`}

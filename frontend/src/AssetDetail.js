@@ -51,9 +51,39 @@ function AssetDetail() {
             <div className="card-body">
               <h2 className="h4">{asset.title}</h2>
               <p className="text-muted">{asset.description}</p>
-              <p>
+              <div className="d-flex flex-wrap gap-2 mb-3">
                 <span className="badge bg-secondary">{asset.status}</span>
-              </p>
+                {asset.asset_type && (
+                  <span className="badge bg-info text-dark">
+                    {asset.asset_type}
+                  </span>
+                )}
+                {asset.confidentiality && (
+                  <span className="badge bg-warning text-dark">
+                    {asset.confidentiality}
+                  </span>
+                )}
+                <span className="badge bg-dark">
+                  v{asset.version_major ?? 1}.{asset.version_minor ?? 0}
+                </span>
+                {asset.workspace_name && (
+                  <span className="badge bg-light text-dark">
+                    {asset.workspace_name}
+                  </span>
+                )}
+              </div>
+
+              <div className="row row-cols-1 row-cols-md-2 g-3 mb-3">
+                <div>
+                  <div className="text-muted small">Source Project</div>
+                  <div>{asset.source_project_id || "Not specified"}</div>
+                </div>
+                <div>
+                  <div className="text-muted small">Updated</div>
+                  <div>{asset.version_updated_at || "Not tracked"}</div>
+                </div>
+              </div>
+
               {(asset.keywords || asset.source_url) && (
                 <div className="mb-3">
                   {asset.keywords && (

@@ -10,6 +10,33 @@ const signUserToken = (user) =>
     expiresIn: JWT_EXPIRES_IN,
   });
 
+const serializeList = (value) => {
+  if (!value) return null;
+  const normalized = Array.isArray(value)
+    ? value
+    : String(value)
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+  return JSON.stringify(normalized);
+};
+
+const parseList = (value) => {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch (_err) {
+    // fall through
+  }
+  return String(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
 const register = async ({ name, email, password }) => {
   const existing = await get("SELECT id FROM users WHERE email = ?", [email]);
   if (existing) {
@@ -24,12 +51,16 @@ const register = async ({ name, email, password }) => {
     [name, email, passwordHash]
   );
 
+  await run("INSERT OR IGNORE INTO expertise_profiles (user_id) VALUES (?)", [
+    result.id,
+  ]);
+
   return { id: result.id, name, email };
 };
 
 const login = async ({ email, password }) => {
   const user = await get(
-    "SELECT id, name, email, password_hash FROM users WHERE email = ?",
+    "SELECT id, name, email, password_hash, role, region, languages, availability FROM users WHERE email = ?",
     [email]
   );
   if (!user) {
@@ -47,10 +78,75 @@ const login = async ({ email, password }) => {
 
   const token = signUserToken(user);
 
-  return { token, user: { id: user.id, name: user.name, email: user.email } };
+  const expertise = await get(
+    "SELECT skills, domains, certifications, current_projects FROM expertise_profiles WHERE user_id = ?",
+    [user.id]
+  );
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role || null,
+      region: user.region || null,
+      languages: parseList(user.languages),
+      availability: user.availability || null,
+      expertise: {
+        skills: parseList(expertise?.skills),
+        domains: parseList(expertise?.domains),
+        certifications: parseList(expertise?.certifications),
+        currentProjects: parseList(expertise?.current_projects),
+      },
+    },
+  };
 };
 
-const updateProfile = async ({ userId, name, email, password }) => {
+const getUserProfile = async (userId) => {
+  const user = await get(
+    "SELECT id, name, email, role, region, languages, availability FROM users WHERE id = ?",
+    [userId]
+  );
+  if (!user) {
+    return null;
+  }
+  const expertise = await get(
+    "SELECT skills, domains, certifications, current_projects FROM expertise_profiles WHERE user_id = ?",
+    [userId]
+  );
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role || null,
+    region: user.region || null,
+    languages: parseList(user.languages),
+    availability: user.availability || null,
+    expertise: {
+      skills: parseList(expertise?.skills),
+      domains: parseList(expertise?.domains),
+      certifications: parseList(expertise?.certifications),
+      currentProjects: parseList(expertise?.current_projects),
+    },
+  };
+};
+
+const updateProfile = async ({
+  userId,
+  name,
+  email,
+  password,
+  role,
+  region,
+  languages,
+  availability,
+  skills,
+  domains,
+  certifications,
+  currentProjects,
+}) => {
   const existing = await get(
     "SELECT id FROM users WHERE email = ? AND id != ?",
     [email, userId]
@@ -66,24 +162,45 @@ const updateProfile = async ({ userId, name, email, password }) => {
     passwordHash = await bcrypt.hash(password, 10);
   }
 
+  const languagesJson = serializeList(languages);
+  const userParams = [
+    name,
+    email,
+    role || null,
+    region || null,
+    languagesJson,
+    availability || null,
+  ];
+
   if (passwordHash) {
     await run(
-      "UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?",
-      [name, email, passwordHash, userId]
+      "UPDATE users SET name = ?, email = ?, role = ?, region = ?, languages = ?, availability = ?, password_hash = ? WHERE id = ?",
+      [...userParams, passwordHash, userId]
     );
   } else {
-    await run("UPDATE users SET name = ?, email = ? WHERE id = ?", [
-      name,
-      email,
-      userId,
-    ]);
+    await run(
+      "UPDATE users SET name = ?, email = ?, role = ?, region = ?, languages = ?, availability = ? WHERE id = ?",
+      [...userParams, userId]
+    );
   }
 
-  const updatedUser = await get(
-    "SELECT id, name, email FROM users WHERE id = ?",
+  await run(
+    "INSERT OR IGNORE INTO expertise_profiles (user_id) VALUES (?)",
     [userId]
   );
 
+  await run(
+    "UPDATE expertise_profiles SET skills = ?, domains = ?, certifications = ?, current_projects = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+    [
+      serializeList(skills),
+      serializeList(domains),
+      serializeList(certifications),
+      serializeList(currentProjects),
+      userId,
+    ]
+  );
+
+  const updatedUser = await getUserProfile(userId);
   const token = signUserToken(updatedUser);
   return { user: updatedUser, token };
 };
@@ -127,6 +244,7 @@ module.exports = {
   register,
   login,
   updateProfile,
+  getUserProfile,
   authenticate,
   authenticateOptional,
 };
