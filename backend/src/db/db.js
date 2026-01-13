@@ -2,7 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const sqlite3 = require("sqlite3");
 
-const dbPath = path.resolve(__dirname, "..", "..", "mwcd_coursework2.db");
+const dbPath = process.env.DB_PATH
+  ? path.resolve(process.cwd(), process.env.DB_PATH)
+  : path.resolve(__dirname, "..", "..", "mwcd_coursework2.db");
 const schemaPath = path.resolve(__dirname, "schema.sql");
 
 const db = new sqlite3.Database(dbPath);

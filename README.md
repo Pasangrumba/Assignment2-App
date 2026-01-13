@@ -25,12 +25,12 @@ Assignment2-App is a component-based mobile web application developed for Course
 Backend:
 1. `cd backend`
 2. `npm install`
-3. `npm start` (defaults to port 5000). If macOS ControlCenter still occupies 5000, stop it or run `PORT=5001 npm start`.
-4. API runs on `http://localhost:5000` (or the port you set).
-5. If the schema changes, run `node src/db/reset_db.js` to rebuild the SQLite database with the latest DKN tables and columns.
+3. `npm start` (defaults to port 5001 for local development to avoid macOS Control Center conflicts). You can also explicitly set the port: `PORT=5001 npm start`.
+4. API runs on `http://localhost:5001` (or the port you set).
+5. If the schema changes, run `node src/db/reset_db.js` to rebuild the SQLite database with the latest DKN tables and columns. You can also control the database file location via the `DB_PATH` environment variable if needed (example: `DB_PATH=backend/mwcd_coursework2.db node src/db/reset_db.js`).
 
 Frontend environment:
-- Local dev: `frontend/.env.local` points to `http://localhost:5000/api` (ignored by git).
+- Local dev: create `frontend/.env.local` with `REACT_APP_API_BASE=http://127.0.0.1:5001/api` (ignored by git).
 - Production build/deploy: `frontend/.env.production` points to `https://assignment2-app-ae32.onrender.com/api` for gh-pages.
 
 Deploy to GitHub Pages:

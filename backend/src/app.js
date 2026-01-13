@@ -9,7 +9,7 @@ const workspaceRoutes = require("./components/knowledge/workspaces.routes");
 const recommendationRoutes = require("./components/knowledge/recommendations.routes");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const HOST = process.env.HOST || "0.0.0.0";
 
 const corsOptions = {
