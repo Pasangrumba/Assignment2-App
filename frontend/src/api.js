@@ -95,16 +95,26 @@ export const assetsApi = {
     }),
   submitForReview: (id) =>
     request(`/assets/${id}/submit`, {
-      method: "POST",
+      method: "PUT",
     }),
 };
 
 export const governanceApi = {
   approveAsset: (id, comments) =>
     request(`/governance/assets/${id}/approve`, {
-      method: "POST",
+      method: "PUT",
       body: JSON.stringify({ comments }),
     }),
+  listPending: () => request("/governance/pending"),
+  rejectAsset: (id, review_comment) =>
+    request(`/governance/assets/${id}/reject`, {
+      method: "PUT",
+      body: JSON.stringify({ review_comment }),
+    }),
+  submitAsset: (id) =>
+    request(`/governance/assets/${id}/submit`, {
+      method: "PUT",
+    })
 };
 
 export const recommendationsApi = {

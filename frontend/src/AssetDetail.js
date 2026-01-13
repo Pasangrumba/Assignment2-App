@@ -114,7 +114,7 @@ function AssetDetail() {
                 ))}
               </div>
 
-              {asset.status === "PendingReview" && (
+              {asset.status === "pending_review" && (
                 <div className="mt-3">
                   <button className="btn btn-success" onClick={handleApprove}>
                     Approve and Publish

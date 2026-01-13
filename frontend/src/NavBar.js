@@ -29,10 +29,13 @@ function NavBar() {
       .toUpperCase();
   }, [user]);
 
+  const isReviewer = ['reviewer','admin'].includes(String(user?.role || '').toLowerCase());
+
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: "🏠" },
     { to: "/assets/new", label: "Create Asset", icon: "📝" },
     { to: "/library", label: "Library", icon: "📚" },
+    ...(isReviewer ? [{ to: "/reviews/pending", label: "Pending Reviews", icon: "✅" }] : []),
   ];
 
   return (

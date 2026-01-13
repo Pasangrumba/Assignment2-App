@@ -1,4 +1,4 @@
-const { get, run } = require("../../db/db");
+const { all, get, run } = require("../../db/db");
 
 const approveAsset = async ({
   assetId,
@@ -18,7 +18,7 @@ const approveAsset = async ({
     throw error;
   }
 
-  if (asset.status !== "PendingReview") {
+  if (asset.status !== "pending_review") {
     const error = new Error("Only PendingReview assets can be approved");
     error.status = 400;
     throw error;
@@ -27,7 +27,7 @@ const approveAsset = async ({
   await run("BEGIN TRANSACTION");
   try {
     await run(
-      "UPDATE knowledge_assets SET status = 'Published' WHERE id = ?",
+      "UPDATE knowledge_assets SET status = 'published' WHERE id = ?",
       [assetId]
     );
     await run(
@@ -55,6 +55,66 @@ const approveAsset = async ({
   return true;
 };
 
+const listPendingReviewAssets = async () => {
+  const assets = await all(
+    `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at,
+            ka.owner_user_id, u.name as owner_name, u.email as owner_email
+     FROM knowledge_assets ka
+     JOIN users u ON u.id = ka.owner_user_id
+     WHERE ka.status = 'pending_review'
+     ORDER BY ka.created_at DESC`
+  );
+  return assets;
+};
+
+const rejectAsset = async ({ assetId, actorUserId, reviewComment }) => {
+  const asset = await get(
+    "SELECT id, status FROM knowledge_assets WHERE id = ?",
+    [assetId]
+  );
+
+  if (!asset) {
+    const error = new Error("Asset not found");
+    error.status = 404;
+    throw error;
+  }
+
+  if (asset.status !== "pending_review") {
+    const error = new Error("Asset is not pending review");
+    error.status = 400;
+    throw error;
+  }
+
+  try {
+    await run("BEGIN");
+    await run(
+      "INSERT INTO governance_actions (asset_id, action, actor_user_id, comments, outcome, reviewer_user_id) VALUES (?, 'Rejected', ?, ?, ?, ?)",
+      [
+        assetId,
+        actorUserId,
+        reviewComment || null,
+        "Rejected",
+        actorUserId,
+      ]
+    );
+
+    await run(
+      "UPDATE knowledge_assets SET status = 'rejected', review_comment = ? WHERE id = ?",
+      [reviewComment || null, assetId]
+    );
+
+    await run("COMMIT");
+  } catch (err) {
+    await run("ROLLBACK");
+    throw err;
+  }
+
+  return true;
+};
+
+
 module.exports = {
   approveAsset,
+  listPendingReviewAssets,
+  rejectAsset,
 };

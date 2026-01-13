@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "mwcd_coursework2_dev_secret";
 const JWT_EXPIRES_IN = "2h";
 
 const signUserToken = (user) =>
-  jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, {
+  jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role || 'author' }, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   });
 
@@ -47,7 +47,7 @@ const register = async ({ name, email, password }) => {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const result = await run(
-    "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+    "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'author')",
     [name, email, passwordHash]
   );
 
@@ -55,7 +55,7 @@ const register = async ({ name, email, password }) => {
     result.id,
   ]);
 
-  return { id: result.id, name, email };
+  return { id: result.id, name, email, role: 'author' };
 };
 
 const login = async ({ email, password }) => {
@@ -89,7 +89,7 @@ const login = async ({ email, password }) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role || null,
+      role: user.role || 'author',
       region: user.region || null,
       languages: parseList(user.languages),
       availability: user.availability || null,
@@ -120,7 +120,7 @@ const getUserProfile = async (userId) => {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role || null,
+    role: user.role || 'author',
     region: user.region || null,
     languages: parseList(user.languages),
     availability: user.availability || null,

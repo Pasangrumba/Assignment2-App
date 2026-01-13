@@ -41,7 +41,7 @@ router.get("/:id", authenticateOptional, async (req, res) => {
       return res.status(404).json({ error: "Asset not found" });
     }
 
-    if (asset.status !== "Published") {
+    if (asset.status !== "published") {
       if (!req.user || asset.owner_user_id !== req.user.id) {
         return res.status(403).json({ error: "Not allowed to view this asset" });
       }
@@ -100,7 +100,7 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-router.post("/:id/submit", authenticate, async (req, res) => {
+router.put("/:id/submit", authenticate, async (req, res) => {
   try {
     const assetId = Number(req.params.id);
     await submitForReview(assetId, req.user.id);

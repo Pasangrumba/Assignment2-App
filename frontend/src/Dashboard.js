@@ -198,7 +198,7 @@ function Dashboard() {
                         >
                           View
                         </Link>
-                        {asset.status === "Draft" && (
+                        {asset.status === "draft" && (
                           <>
                             <Link
                               className="btn btn-outline-primary btn-sm me-2"

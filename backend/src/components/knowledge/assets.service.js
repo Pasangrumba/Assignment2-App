@@ -26,7 +26,7 @@ const createAsset = async ({
   await run("BEGIN TRANSACTION");
   try {
     const assetResult = await run(
-      "INSERT INTO knowledge_assets (title, description, status, owner_user_id, keywords, source_url, asset_type, confidentiality, source_project_id, workspace_id, version_major, version_minor) VALUES (?, ?, 'Draft', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO knowledge_assets (title, description, status, owner_user_id, keywords, source_url, asset_type, confidentiality, source_project_id, workspace_id, version_major, version_minor) VALUES (?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         title,
         description,
@@ -64,7 +64,7 @@ const listPublishedAssets = async () => {
     `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ws.name as workspace_name
      FROM knowledge_assets ka
      LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
-     WHERE ka.status = 'Published'
+     WHERE ka.status = 'published'
      ORDER BY ka.created_at DESC`
   );
   return assets;
@@ -120,7 +120,7 @@ const submitForReview = async (assetId, ownerUserId) => {
     throw error;
   }
 
-  if (asset.status !== "Draft") {
+  if (asset.status !== "draft") {
     const error = new Error("Only Draft assets can be submitted");
     error.status = 400;
     throw error;
@@ -142,7 +142,7 @@ const submitForReview = async (assetId, ownerUserId) => {
   }
 
   await run(
-    "UPDATE knowledge_assets SET status = 'PendingReview' WHERE id = ?",
+    "UPDATE knowledge_assets SET status = 'pending_review' WHERE id = ?",
     [assetId]
   );
 
@@ -167,7 +167,7 @@ const deleteDraft = async (assetId, ownerUserId) => {
     throw error;
   }
 
-  if (asset.status !== "Draft") {
+  if (asset.status !== "draft") {
     const error = new Error("Only Draft assets can be deleted");
     error.status = 400;
     throw error;
@@ -211,7 +211,7 @@ const updateDraft = async ({
       throw error;
     }
 
-    if (asset.status !== "Draft") {
+    if (asset.status !== "draft") {
       const error = new Error("Only Draft assets can be updated");
       error.status = 400;
       throw error;

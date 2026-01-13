@@ -1,13 +1,37 @@
 const express = require("express");
-const { approveAsset } = require("./governance.service");
+const { approveAsset, listPendingReviewAssets, rejectAsset } = require("./governance.service");
+const { submitForReview } = require("../knowledge/assets.service");
 const { authenticate } = require("../identity/auth.service");
+const requireRole = require("../../middleware/requireRole");
 
 const router = express.Router();
 
-router.post("/assets/:id/approve", authenticate, async (req, res) => {
+// Author submits their own draft for review (draft -> pending_review)
+router.put("/assets/:id/submit", authenticate, async (req, res) => {
   try {
     const assetId = Number(req.params.id);
-    const { comments, outcome, issues } = req.body;
+    await submitForReview(assetId, req.user.id);
+    return res.json({ message: "Asset submitted for review" });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// Reviewer/Admin list all assets pending review
+router.get("/pending", authenticate, requireRole(["reviewer", "admin"]), async (_req, res) => {
+  try {
+    const assets = await listPendingReviewAssets();
+    return res.json({ assets });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to load pending assets" });
+  }
+});
+
+// Reviewer/Admin approves pending asset (pending_review -> published)
+router.put("/assets/:id/approve", authenticate, requireRole(["reviewer", "admin"]), async (req, res) => {
+  try {
+    const assetId = Number(req.params.id);
+    const { comments, outcome, issues } = req.body || {};
     await approveAsset({
       assetId,
       actorUserId: req.user.id,
@@ -16,6 +40,22 @@ router.post("/assets/:id/approve", authenticate, async (req, res) => {
       issues: Array.isArray(issues) ? issues.map(String) : [],
     });
     return res.json({ message: "Asset approved and published" });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// Reviewer/Admin rejects pending asset (pending_review -> rejected)
+router.put("/assets/:id/reject", authenticate, requireRole(["reviewer", "admin"]), async (req, res) => {
+  try {
+    const assetId = Number(req.params.id);
+    const { review_comment } = req.body || {};
+    await rejectAsset({
+      assetId,
+      actorUserId: req.user.id,
+      reviewComment: review_comment ? String(review_comment) : null,
+    });
+    return res.json({ message: "Asset rejected" });
   } catch (err) {
     return res.status(err.status || 500).json({ error: err.message });
   }

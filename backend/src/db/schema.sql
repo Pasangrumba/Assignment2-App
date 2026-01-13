@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  role TEXT,
+  role TEXT NOT NULL DEFAULT 'author' CHECK (role IN ('author','reviewer','admin')),
+
   region TEXT,
   languages TEXT,
   availability TEXT,
@@ -20,7 +21,9 @@ CREATE TABLE IF NOT EXISTS knowledge_assets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'Draft',
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','pending_review','published','rejected')),
+  review_comment TEXT,
+
   owner_user_id INTEGER NOT NULL,
   keywords TEXT,
   source_url TEXT,

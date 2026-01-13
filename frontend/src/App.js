@@ -9,6 +9,7 @@ import AssetDetail from "./AssetDetail";
 import RequireAuth from "./RequireAuth";
 import EditAsset from "./EditAsset";
 import Profile from "./Profile";
+import PendingReviews from "./PendingReviews";
 
 function App() {
   return (
@@ -53,6 +54,14 @@ function App() {
           element={
             <RequireAuth>
               <Library />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/reviews/pending"
+          element={
+            <RequireAuth>
+              <PendingReviews />
             </RequireAuth>
           }
         />
