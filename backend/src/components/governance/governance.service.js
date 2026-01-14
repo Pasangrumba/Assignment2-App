@@ -55,15 +55,22 @@ const approveAsset = async ({
   return true;
 };
 
-const listPendingReviewAssets = async () => {
-  const assets = await all(
-    `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at,
+const listPendingReviewAssets = async (workspaceId = null) => {
+  const params = [];
+  let sql = `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at,
             ka.owner_user_id, u.name as owner_name, u.email as owner_email
      FROM knowledge_assets ka
      JOIN users u ON u.id = ka.owner_user_id
-     WHERE ka.status = 'pending_review'
-     ORDER BY ka.created_at DESC`
-  );
+     WHERE ka.status = 'pending_review'`;
+
+  if (workspaceId) {
+    sql += ' AND ka.workspace_id = ?';
+    params.push(workspaceId);
+  }
+
+  sql += ' ORDER BY ka.created_at DESC';
+
+  const assets = await all(sql, params);
   return assets;
 };
 

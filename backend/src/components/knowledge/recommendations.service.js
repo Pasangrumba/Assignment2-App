@@ -11,7 +11,7 @@ const getRecommendations = async (workspaceId = null) => {
     SELECT ka.id, ka.title, ka.description, ka.asset_type, ka.confidentiality, ka.workspace_id, ws.name AS workspace_name
     FROM knowledge_assets ka
     LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
-    WHERE ka.status = 'Published'
+    WHERE ka.status = 'published'
   `;
 
   if (workspaceId) {

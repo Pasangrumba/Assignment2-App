@@ -18,9 +18,10 @@ router.put("/assets/:id/submit", authenticate, async (req, res) => {
 });
 
 // Reviewer/Admin list all assets pending review
-router.get("/pending", authenticate, requireRole(["reviewer", "admin"]), async (_req, res) => {
+router.get("/pending", authenticate, requireRole(["reviewer", "admin"]), async (req, res) => {
   try {
-    const assets = await listPendingReviewAssets();
+    const workspaceId = req.query.workspaceId ? Number(req.query.workspaceId) : null;
+    const assets = await listPendingReviewAssets(workspaceId);
     return res.json({ assets });
   } catch (err) {
     return res.status(500).json({ error: "Failed to load pending assets" });

@@ -105,7 +105,7 @@ export const governanceApi = {
       method: "PUT",
       body: JSON.stringify({ comments }),
     }),
-  listPending: () => request("/governance/pending"),
+  listPending: (workspaceId) => request(`/governance/pending${workspaceId ? `?workspaceId=${workspaceId}` : ""}`),
   rejectAsset: (id, review_comment) =>
     request(`/governance/assets/${id}/reject`, {
       method: "PUT",

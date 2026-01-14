@@ -1,18 +1,27 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "./NavBar";
-import { governanceApi } from "./api";
+import { governanceApi, workspacesApi } from "./api";
 
 function PendingReviews() {
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [workspaces, setWorkspaces] = useState([]);
+  const [workspaceFilter, setWorkspaceFilter] = useState("");
+
+  const loadWorkspaces = () => {
+    workspacesApi
+      .list()
+      .then((data) => setWorkspaces(data.workspaces || []))
+      .catch(() => setWorkspaces([]));
+  };
 
   const load = () => {
     setLoading(true);
     setError("");
     governanceApi
-      .listPending()
+      .listPending(workspaceFilter ? workspaceFilter : null)
       .then((data) => setAssets(data.assets || []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -20,7 +29,12 @@ function PendingReviews() {
 
   useEffect(() => {
     load();
+    loadWorkspaces();
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [workspaceFilter]);
 
   const handleApprove = async (id) => {
     setMessage("");
@@ -52,6 +66,25 @@ function PendingReviews() {
         <div className="container py-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2 className="h4 mb-0">Pending Reviews</h2>
+          </div>
+
+          <div className="row g-3 mb-3">
+            <div className="col-12 col-md-6">
+              <label className="form-label">Workspace</label>
+              <select
+                className="form-select"
+                value={workspaceFilter}
+                onChange={(event) => setWorkspaceFilter(event.target.value)}
+              >
+                <option value="">All workspaces</option>
+                {workspaces.map((ws) => (
+                  <option key={ws.id} value={ws.id}>
+                    {ws.name}
+                  </option>
+                ))}
+              </select>
+              <div className="form-text">Filter pending assets by workspace.</div>
+            </div>
           </div>
 
           {message && <div className="alert alert-success">{message}</div>}
