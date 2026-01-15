@@ -142,13 +142,16 @@ function Profile() {
                 </div>
                 <div className="col-12 col-md-6">
                   <label className="form-label">Role</label>
-                  <input
+                  <select
                     className="form-control"
                     name="role"
                     value={form.role}
                     onChange={handleChange}
-                    placeholder="e.g. Knowledge Manager"
-                  />
+                  >
+                    <option value="">Select a role</option>
+                    <option value="author">Author</option>
+                    <option value="reviewer">Reviewer</option>
+                  </select>
                 </div>
                 <div className="col-12 col-md-6">
                   <label className="form-label">Region</label>
