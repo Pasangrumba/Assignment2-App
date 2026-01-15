@@ -1,4 +1,13 @@
-const API_BASE = "https://assignment2-app-ae32.onrender.com/api";
+const API_BASE = (() => {
+  if (process.env.REACT_APP_API_BASE) {
+    return process.env.REACT_APP_API_BASE;
+  }
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") {
+    return "http://127.0.0.1:5000/api";
+  }
+  return "https://assignment2-app-ae32.onrender.com/api";
+})();
 
 export const getToken = () => localStorage.getItem("token");
 
