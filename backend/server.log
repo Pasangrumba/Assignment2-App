@@ -1,0 +1,18 @@
+Server is running on http://0.0.0.0:5001
+SyntaxError: Expected ',' or ']' after array element in JSON at position 95
+    at JSON.parse (<anonymous>)
+    at parse (/Users/pasangrumba/Library/CloudStorage/OneDrive-UniversityofWestLondon/Msc Software Enigineering/Mobile Web Component Development/Assignment/Coursework 2/mwcd-a2-app/backend/node_modules/body-parser/lib/types/json.js:92:19)
+    at /Users/pasangrumba/Library/CloudStorage/OneDrive-UniversityofWestLondon/Msc Software Enigineering/Mobile Web Component Development/Assignment/Coursework 2/mwcd-a2-app/backend/node_modules/body-parser/lib/read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (/Users/pasangrumba/Library/CloudStorage/OneDrive-UniversityofWestLondon/Msc Software Enigineering/Mobile Web Component Development/Assignment/Coursework 2/mwcd-a2-app/backend/node_modules/raw-body/index.js:238:16)
+    at done (/Users/pasangrumba/Library/CloudStorage/OneDrive-UniversityofWestLondon/Msc Software Enigineering/Mobile Web Component Development/Assignment/Coursework 2/mwcd-a2-app/backend/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/Users/pasangrumba/Library/CloudStorage/OneDrive-UniversityofWestLondon/Msc Software Enigineering/Mobile Web Component Development/Assignment/Coursework 2/mwcd-a2-app/backend/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:524:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  expose: true,
+  statusCode: 400,
+  status: 400,
+  body: '{"title":"Pending Workspace 1","description":"Draft to be submitted in workspace 1","tagIds":[3|4|8|12|16|19,,,,,],"workspaceId":1}',
+  type: 'entity.parse.failed'
+}
