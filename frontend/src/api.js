@@ -6,7 +6,7 @@ const API_BASE = (() => {
   if (host === "localhost" || host === "127.0.0.1") {
     return "http://127.0.0.1:5000/api";
   }
-  return "https://assignment2-app-backend.onrender.com/api";
+  return "https://assignment2-app-ae32.onrender.com/api";
 })();
 
 export const getToken = () => localStorage.getItem("token");
