@@ -60,6 +60,9 @@ function Signup() {
           <div className="text-center auth-subtitle">
             Set up access to manage and govern knowledge assets.
           </div>
+          <div className="text-center auth-subtitle">
+          All users register with the default author role. Reviewer roles are assigned after sign-in via the User Profile.
+          </div>
           {serverError && (
             <div className="alert alert-danger">{serverError}</div>
           )}
