@@ -51,10 +51,8 @@ function Login() {
         <div className="auth-card">
           <h4 className="text-center">Sign in</h4>
           <div className="text-center auth-subtitle">
-            Continue to the Digital Knowledge Network workspace.
-          </div>
-          <div className="text-center auth-subtitle">
-          All users register with the default author role. Reviewer roles are assigned after sign-in via the User Profile.
+            Continue to the Digital Knowledge Network workspace.<br/>
+            All users register with the default author role. Reviewer roles are assigned after sign-in via the User Profile.
           </div>
           {serverError && (
             <div className="alert alert-danger">{serverError}</div>
