@@ -92,16 +92,63 @@ const seedIfEmpty = async () => {
     authorResult.id,
   ]);
 
-  await run(
-    "INSERT INTO knowledge_assets (title, description, status, owner_user_id, keywords, workspace_id) VALUES (?, ?, 'pending_review', ?, ?, ?)",
+  const seededAssets = [
     [
       "Quarterly Insight Report",
       "Sample asset seeded for reviewer workflow testing.",
-      authorResult.id,
       "finance,insights,report",
       1,
-    ]
-  );
+    ],
+    [
+      "Client Delivery Playbook",
+      "Operational checklist for delivery teams.",
+      "delivery,playbook,checklist",
+      2,
+    ],
+    [
+      "Innovation Lab Prototype Notes",
+      "Exploration notes for early-stage prototype.",
+      "innovation,prototype,notes",
+      3,
+    ],
+    [
+      "Security Automation Brief",
+      "Overview of automation opportunities in security.",
+      "security,automation,brief",
+      1,
+    ],
+    [
+      "Healthcare Analytics Snapshot",
+      "Short insights summary for healthcare analytics.",
+      "healthcare,analytics,summary",
+      2,
+    ],
+    [
+      "API Delivery Checklist",
+      "Checklist to validate API delivery readiness.",
+      "api,delivery,checklist",
+      2,
+    ],
+    [
+      "Education Data Trends",
+      "Key trends in education data programs.",
+      "education,data,trends",
+      3,
+    ],
+    [
+      "Risk Review Template",
+      "Template for structured risk review.",
+      "risk,template,review",
+      1,
+    ],
+  ];
+
+  for (const [title, description, keywords, workspaceId] of seededAssets) {
+    await run(
+      "INSERT INTO knowledge_assets (title, description, status, owner_user_id, keywords, workspace_id) VALUES (?, ?, 'pending_review', ?, ?, ?)",
+      [title, description, authorResult.id, keywords, workspaceId]
+    );
+  }
 };
 
 
