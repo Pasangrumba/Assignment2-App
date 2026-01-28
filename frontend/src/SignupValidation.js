@@ -36,6 +36,12 @@ function Validation(values) {
         error.confirmPassword = ""
     }
 
+    if(values.role === "") {
+        error.role = "Role is required"
+    } else {
+        error.role = ""
+    }
+
     return error;
 }
 

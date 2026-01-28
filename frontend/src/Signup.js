@@ -9,6 +9,7 @@ function Signup() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "author",
   });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
@@ -29,7 +30,8 @@ function Signup() {
       err.name === "" &&
       err.email === "" &&
       err.password === "" &&
-      err.confirmPassword === ""
+      err.confirmPassword === "" &&
+      err.role === ""
     ) {
       setLoading(true);
       authApi
@@ -37,6 +39,7 @@ function Signup() {
           name: values.name.trim(),
           email: values.email.trim(),
           password: values.password,
+          role: values.role,
         })
         .then(() => {
           navigate("/");
@@ -59,7 +62,7 @@ function Signup() {
           <h4 className="text-center">Create account</h4>
           <div className="text-center auth-subtitle">
             Set up access to manage and govern knowledge assets.<br/>
-            All users register with the default author role. Reviewer roles are assigned after sign-in via the User Profile.
+            Select an author or reviewer role to match your responsibilities.
           </div>
           <div className="text-center auth-subtitle">
           
@@ -125,6 +128,21 @@ function Signup() {
               {errors.confirmPassword && (
                 <span className="text-danger">{errors.confirmPassword}</span>
               )}
+            </div>
+            <div className="mb-3">
+              <label htmlFor="role" className="text-left">
+                <strong>Role</strong>
+              </label>
+              <select
+                name="role"
+                value={values.role}
+                onChange={handleInput}
+                className="form-select rounded-0 auth-input"
+              >
+                <option value="author">Author</option>
+                <option value="reviewer">Reviewer</option>
+              </select>
+              {errors.role && <span className="text-danger">{errors.role}</span>}
             </div>
             <button
               type="submit"

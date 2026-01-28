@@ -52,7 +52,7 @@ function Login() {
           <h4 className="text-center">Sign in</h4>
           <div className="text-center auth-subtitle">
             Continue to the Digital Knowledge Network workspace.<br/>
-            All users register with the default author role. Reviewer roles are assigned after sign-in via the User Profile.
+            New accounts can select author or reviewer during sign up.
           </div>
           {serverError && (
             <div className="alert alert-danger">{serverError}</div>

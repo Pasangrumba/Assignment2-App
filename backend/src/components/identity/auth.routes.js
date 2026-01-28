@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" });
     }
@@ -19,6 +19,7 @@ router.post("/register", async (req, res) => {
       name: String(name).trim(),
       email: String(email).trim().toLowerCase(),
       password: String(password),
+      role: role ? String(role) : null,
     });
     return res.status(201).json({ user });
   } catch (err) {

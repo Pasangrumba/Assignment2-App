@@ -37,7 +37,7 @@ const parseList = (value) => {
     .filter(Boolean);
 };
 
-const register = async ({ name, email, password }) => {
+const register = async ({ name, email, password, role }) => {
   const existing = await get("SELECT id FROM users WHERE email = ?", [email]);
   if (existing) {
     const error = new Error("Email already registered");
@@ -45,17 +45,21 @@ const register = async ({ name, email, password }) => {
     throw error;
   }
 
+  const allowedRoles = new Set(["author", "reviewer"]);
+  const normalizedRole = role ? String(role).trim().toLowerCase() : "author";
+  const safeRole = allowedRoles.has(normalizedRole) ? normalizedRole : "author";
+
   const passwordHash = await bcrypt.hash(password, 10);
   const result = await run(
-    "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'author')",
-    [name, email, passwordHash]
+    "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+    [name, email, passwordHash, safeRole]
   );
 
   await run("INSERT OR IGNORE INTO expertise_profiles (user_id) VALUES (?)", [
     result.id,
   ]);
 
-  return { id: result.id, name, email, role: 'author' };
+  return { id: result.id, name, email, role: safeRole };
 };
 
 const login = async ({ email, password }) => {
