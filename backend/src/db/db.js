@@ -194,6 +194,21 @@ db.serialize(() => {
       "version_updated_at",
       "version_updated_at TEXT"
     ),
+    addColumnIfMissing(
+      "knowledge_assets",
+      "last_reviewed_at",
+      "last_reviewed_at TEXT"
+    ),
+    addColumnIfMissing(
+      "knowledge_assets",
+      "review_due_at",
+      "review_due_at TEXT"
+    ),
+    addColumnIfMissing(
+      "knowledge_assets",
+      "expiry_at",
+      "expiry_at TEXT"
+    ),
     addColumnIfMissing("governance_actions", "outcome", "outcome TEXT"),
     addColumnIfMissing("governance_actions", "issues", "issues TEXT"),
     addColumnIfMissing(

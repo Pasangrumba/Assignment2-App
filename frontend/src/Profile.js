@@ -151,6 +151,7 @@ function Profile() {
                     <option value="">Select a role</option>
                     <option value="author">Author</option>
                     <option value="reviewer">Reviewer</option>
+                    <option value="champion">Champion</option>
                   </select>
                 </div>
                 <div className="col-12 col-md-6">

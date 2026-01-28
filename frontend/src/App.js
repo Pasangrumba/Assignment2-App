@@ -10,6 +10,11 @@ import RequireAuth from "./RequireAuth";
 import EditAsset from "./EditAsset";
 import Profile from "./Profile";
 import PendingReviews from "./PendingReviews";
+import MetricsDashboard from "./MetricsDashboard";
+import GovernanceAdmin from "./GovernanceAdmin";
+import Champions from "./Champions";
+import ChampionInbox from "./ChampionInbox";
+import AdminChampions from "./AdminChampions";
 
 function App() {
   return (
@@ -62,6 +67,46 @@ function App() {
           element={
             <RequireAuth>
               <PendingReviews />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/metrics"
+          element={
+            <RequireAuth>
+              <MetricsDashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/governance"
+          element={
+            <RequireAuth>
+              <GovernanceAdmin />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/champions"
+          element={
+            <RequireAuth>
+              <Champions />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/champions/inbox"
+          element={
+            <RequireAuth>
+              <ChampionInbox />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/champions"
+          element={
+            <RequireAuth>
+              <AdminChampions />
             </RequireAuth>
           }
         />

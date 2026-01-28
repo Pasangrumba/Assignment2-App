@@ -2,6 +2,7 @@ const express = require("express");
 const {
   createAsset,
   listPublishedAssets,
+  searchAssets,
   listAssetsByOwner,
   getAssetById,
   submitForReview,
@@ -11,6 +12,7 @@ const {
   resetAssetsByOwner,
 } = require("./assets.service");
 const { authenticate, authenticateOptional } = require("../identity/auth.service");
+const { trackEvent } = require("../metrics/usage.service");
 
 const router = express.Router();
 
@@ -20,6 +22,17 @@ router.get("/", async (_req, res) => {
     return res.json({ assets });
   } catch (err) {
     return res.status(500).json({ error: "Failed to load assets" });
+  }
+});
+
+router.get("/search", authenticateOptional, async (req, res) => {
+  try {
+    const query = req.query.q ? String(req.query.q) : "";
+    const assets = await searchAssets(query);
+    await trackEvent(req, "SEARCH", null, { query });
+    return res.json({ assets });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to search assets" });
   }
 });
 
@@ -42,14 +55,42 @@ router.get("/:id", authenticateOptional, async (req, res) => {
     }
 
     if (asset.status !== "published") {
+      if (asset.status === "needs_review" || asset.status === "expired") {
+        await trackEvent(req, "VIEW", assetId);
+        return res.json({ asset });
+      }
       if (!req.user || asset.owner_user_id !== req.user.id) {
         return res.status(403).json({ error: "Not allowed to view this asset" });
       }
     }
 
+    await trackEvent(req, "VIEW", assetId);
     return res.json({ asset });
   } catch (err) {
     return res.status(500).json({ error: "Failed to load asset" });
+  }
+});
+
+router.get("/:id/download", authenticateOptional, async (req, res) => {
+  try {
+    const assetId = Number(req.params.id);
+    const asset = await getAssetById(assetId);
+    if (!asset) {
+      return res.status(404).json({ error: "Asset not found" });
+    }
+    if (asset.status !== "published") {
+      if (asset.status === "needs_review" || asset.status === "expired") {
+        await trackEvent(req, "DOWNLOAD", assetId);
+        return res.json({ asset, message: "Download ready" });
+      }
+      if (!req.user || asset.owner_user_id !== req.user.id) {
+        return res.status(403).json({ error: "Not allowed to download this asset" });
+      }
+    }
+    await trackEvent(req, "DOWNLOAD", assetId);
+    return res.json({ asset, message: "Download ready" });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to download asset" });
   }
 });
 
@@ -94,6 +135,7 @@ router.post("/", authenticate, async (req, res) => {
       versionMinor: Number.isFinite(parsedVersionMinor) ? parsedVersionMinor : 0,
     });
 
+    await trackEvent(req, "CREATE", assetId);
     return res.status(201).json({ assetId });
   } catch (err) {
     return res.status(500).json({ error: "Failed to create asset" });

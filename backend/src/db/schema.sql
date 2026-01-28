@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'author' CHECK (role IN ('author','reviewer','admin')),
+  role TEXT NOT NULL DEFAULT 'author' CHECK (role IN ('author','reviewer','admin','champion')),
 
   region TEXT,
   languages TEXT,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS knowledge_assets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','pending_review','published','rejected')),
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','pending_review','published','rejected','needs_review','expired')),
   review_comment TEXT,
 
   owner_user_id INTEGER NOT NULL,
@@ -34,6 +34,9 @@ CREATE TABLE IF NOT EXISTS knowledge_assets (
   version_major INTEGER NOT NULL DEFAULT 1,
   version_minor INTEGER NOT NULL DEFAULT 0,
   version_updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_reviewed_at TEXT,
+  review_due_at TEXT,
+  expiry_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (owner_user_id) REFERENCES users (id),
   FOREIGN KEY (workspace_id) REFERENCES workspaces (id)
@@ -94,6 +97,42 @@ CREATE TABLE IF NOT EXISTS integration_events (
   source_system TEXT NOT NULL,
   payload_hash TEXT NOT NULL,
   processed_on TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS usage_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  content_id INTEGER,
+  metadata TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_user_id INTEGER NOT NULL,
+  action TEXT NOT NULL,
+  content_id INTEGER NOT NULL,
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS champion_assignments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  champion_user_id INTEGER NOT NULL,
+  region TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS mentoring_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  requester_user_id INTEGER NOT NULL,
+  champion_user_id INTEGER NOT NULL,
+  topic TEXT NOT NULL,
+  message TEXT,
+  status TEXT NOT NULL DEFAULT 'OPEN',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolved_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS asset_statuses (

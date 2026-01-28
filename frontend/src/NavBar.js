@@ -29,13 +29,21 @@ function NavBar() {
       .toUpperCase();
   }, [user]);
 
-  const isReviewer = ['reviewer','admin'].includes(String(user?.role || '').toLowerCase());
+  const role = String(user?.role || "").toLowerCase();
+  const isReviewer = ["reviewer", "admin"].includes(role);
+  const isChampion = ["champion", "admin"].includes(role);
+  const isAdmin = role === "admin";
 
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: "🏠" },
     { to: "/assets/new", label: "Create Asset", icon: "📝" },
     { to: "/library", label: "Library", icon: "📚" },
+    { to: "/champions", label: "Champions", icon: "🤝" },
     ...(isReviewer ? [{ to: "/reviews/pending", label: "Pending Reviews", icon: "✅" }] : []),
+    ...(isReviewer ? [{ to: "/admin/metrics", label: "Metrics", icon: "📈" }] : []),
+    ...(isReviewer ? [{ to: "/admin/governance", label: "Governance", icon: "🛡️" }] : []),
+    ...(isChampion ? [{ to: "/champions/inbox", label: "Champion Inbox", icon: "📬" }] : []),
+    ...(isAdmin ? [{ to: "/admin/champions", label: "Assign Champions", icon: "🧭" }] : []),
   ];
 
   return (

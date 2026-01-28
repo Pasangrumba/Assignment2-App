@@ -61,10 +61,10 @@ const createAsset = async ({
 
 const listPublishedAssets = async () => {
   const assets = await all(
-    `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ws.name as workspace_name
+    `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ka.last_reviewed_at, ka.review_due_at, ka.expiry_at, ws.name as workspace_name
      FROM knowledge_assets ka
      LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
-     WHERE ka.status = 'published'
+     WHERE ka.status IN ('published','needs_review','expired')
      ORDER BY ka.created_at DESC`
   );
   return assets;
@@ -84,7 +84,7 @@ const listAssetsByOwner = async (ownerUserId) => {
 
 const getAssetById = async (assetId) => {
   const asset = await get(
-    `SELECT ka.id, ka.title, ka.description, ka.status, ka.owner_user_id, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ws.name as workspace_name
+    `SELECT ka.id, ka.title, ka.description, ka.status, ka.owner_user_id, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ka.last_reviewed_at, ka.review_due_at, ka.expiry_at, ws.name as workspace_name
      FROM knowledge_assets ka
      LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
      WHERE ka.id = ?`,
@@ -100,6 +100,23 @@ const getAssetById = async (assetId) => {
   );
 
   return { ...asset, tags };
+};
+
+const searchAssets = async (query) => {
+  const term = `%${String(query || "").trim()}%`;
+  if (term === "%%") {
+    return [];
+  }
+  const assets = await all(
+    `SELECT ka.id, ka.title, ka.description, ka.status, ka.created_at, ka.keywords, ka.source_url, ka.asset_type, ka.confidentiality, ka.source_project_id, ka.workspace_id, ka.version_major, ka.version_minor, ka.version_updated_at, ka.last_reviewed_at, ka.review_due_at, ka.expiry_at, ws.name as workspace_name
+     FROM knowledge_assets ka
+     LEFT JOIN workspaces ws ON ws.id = ka.workspace_id
+     WHERE ka.status IN ('published','needs_review','expired')
+       AND (ka.title LIKE ? OR ka.description LIKE ? OR ka.keywords LIKE ?)
+     ORDER BY ka.created_at DESC`,
+    [term, term, term]
+  );
+  return assets;
 };
 
 const submitForReview = async (assetId, ownerUserId) => {
@@ -265,6 +282,7 @@ module.exports = {
   REQUIRED_TAG_TYPES,
   createAsset,
   listPublishedAssets,
+  searchAssets,
   listAssetsByOwner,
   getAssetById,
   submitForReview,

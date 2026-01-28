@@ -7,6 +7,11 @@ const tagRoutes = require("./components/metadata/tags.routes");
 const governanceRoutes = require("./components/governance/governance.routes");
 const workspaceRoutes = require("./components/knowledge/workspaces.routes");
 const recommendationRoutes = require("./components/knowledge/recommendations.routes");
+const metricsRoutes = require("./components/metrics/metrics.routes");
+const championRoutes = require("./components/champions/champions.routes");
+const mentoringRoutes = require("./components/champions/mentoring.routes");
+const championAdminRoutes = require("./components/champions/admin.routes");
+const { startGovernanceScheduler } = require("./jobs/governanceScheduler");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -35,6 +40,10 @@ app.use("/api/tags", tagRoutes);
 app.use("/api/governance", governanceRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/metrics", metricsRoutes);
+app.use("/api/champions", championRoutes);
+app.use("/api/mentoring-requests", mentoringRoutes);
+app.use("/api/admin", championAdminRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
@@ -44,3 +53,5 @@ app.use((err, _req, res, _next) => {
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
 });
+
+startGovernanceScheduler();

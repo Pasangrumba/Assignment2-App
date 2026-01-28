@@ -6,6 +6,7 @@ const {
   updateProfile,
   getUserProfile,
 } = require("./auth.service");
+const { trackEvent } = require("../metrics/usage.service");
 
 const router = express.Router();
 
@@ -37,6 +38,8 @@ router.post("/login", async (req, res) => {
       email: String(email).trim().toLowerCase(),
       password: String(password),
     });
+    req.user = { id: payload.user?.id };
+    await trackEvent(req, "LOGIN");
     return res.json(payload);
   } catch (err) {
     return res.status(err.status || 500).json({ error: err.message });

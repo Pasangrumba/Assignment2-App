@@ -35,6 +35,16 @@ function AssetDetail() {
       .catch((err) => setError(err.message));
   };
 
+  const handleDownload = () => {
+    setActionMessage("");
+    assetsApi
+      .download(id)
+      .then(() => {
+        setActionMessage("Download prepared.");
+      })
+      .catch((err) => setError(err.message));
+  };
+
   return (
     <div className="app-shell">
       <NavBar />
@@ -82,6 +92,18 @@ function AssetDetail() {
                   <div className="text-muted small">Updated</div>
                   <div>{asset.version_updated_at || "Not tracked"}</div>
                 </div>
+                <div>
+                  <div className="text-muted small">Last Reviewed</div>
+                  <div>{asset.last_reviewed_at || "Not reviewed"}</div>
+                </div>
+                <div>
+                  <div className="text-muted small">Review Due</div>
+                  <div>{asset.review_due_at || "Not scheduled"}</div>
+                </div>
+                <div>
+                  <div className="text-muted small">Expiry</div>
+                  <div>{asset.expiry_at || "Not scheduled"}</div>
+                </div>
               </div>
 
               {(asset.keywords || asset.source_url) && (
@@ -121,6 +143,11 @@ function AssetDetail() {
                   </button>
                 </div>
               )}
+              <div className="mt-3">
+                <button className="btn btn-outline-primary" onClick={handleDownload}>
+                  Download Report
+                </button>
+              </div>
             </div>
           </div>
         )}

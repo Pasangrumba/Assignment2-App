@@ -73,8 +73,10 @@ export const workspacesApi = {
 
 export const assetsApi = {
   listPublished: () => request("/assets"),
+  search: (query) => request(`/assets/search?q=${encodeURIComponent(query)}`),
   listMine: () => request("/assets/mine"),
   getById: (id) => request(`/assets/${id}`),
+  download: (id) => request(`/assets/${id}/download`),
   create: (payload) =>
     request("/assets", {
       method: "POST",
@@ -106,6 +108,13 @@ export const governanceApi = {
       body: JSON.stringify({ comments }),
     }),
   listPending: (workspaceId) => request(`/governance/pending${workspaceId ? `?workspaceId=${workspaceId}` : ""}`),
+  listByStatus: (status) => request(`/governance/status?status=${encodeURIComponent(status)}`),
+  auditLogs: (id) => request(`/governance/assets/${id}/audit`),
+  revalidateAsset: (id, notes) =>
+    request(`/governance/${id}/revalidate`, {
+      method: "POST",
+      body: JSON.stringify({ notes }),
+    }),
   rejectAsset: (id, review_comment) =>
     request(`/governance/assets/${id}/reject`, {
       method: "PUT",
@@ -115,6 +124,42 @@ export const governanceApi = {
     request(`/governance/assets/${id}/submit`, {
       method: "PUT",
     })
+};
+
+export const metricsApi = {
+  adoption: (from, to) => {
+    const params = new URLSearchParams();
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    return request(`/metrics/adoption?${params.toString()}`);
+  },
+};
+
+export const championsApi = {
+  list: (region) =>
+    request(`/champions${region ? `?region=${encodeURIComponent(region)}` : ""}`),
+};
+
+export const mentoringApi = {
+  create: (payload) =>
+    request("/mentoring-requests", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  inbox: () => request("/mentoring-requests/inbox"),
+  update: (id, status) =>
+    request(`/mentoring-requests/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+};
+
+export const adminApi = {
+  assignChampion: (payload) =>
+    request("/admin/champions/assign", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };
 
 export const recommendationsApi = {
