@@ -50,6 +50,11 @@ function Login() {
         </div>
         <div className="auth-card">
           <h4 className="text-center">Sign in</h4>
+          <div className="alert alert-info text-start">
+            <strong>Reviewer test login</strong>
+            <div>Email: reviewer@test.com</div>
+            <div>Password: admin123</div>
+          </div>
           <div className="text-center auth-subtitle">
             Continue to the Digital Knowledge Network workspace.<br/>
             New accounts can select author or reviewer during sign up.
