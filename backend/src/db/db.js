@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const sqlite3 = require("sqlite3");
+const bcrypt = require("bcrypt");
 
 const dbPath = process.env.DB_PATH
   ? path.resolve(process.env.DB_PATH)
@@ -66,6 +67,42 @@ const all = (sql, params = []) =>
     });
   });
 
+const seedIfEmpty = async () => {
+  const existing = await get("SELECT COUNT(*) as count FROM users");
+  if (existing && existing.count > 0) {
+    return;
+  }
+
+  const seedPassword = process.env.SEED_REVIEWER_PASSWORD || "admin123";
+  const reviewerEmail = process.env.SEED_REVIEWER_EMAIL || "reviewer@test.com";
+  const authorEmail = process.env.SEED_AUTHOR_EMAIL || "author@test.com";
+  const passwordHash = await bcrypt.hash(seedPassword, 10);
+
+  const authorResult = await run(
+    "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+    ["Author User", authorEmail, passwordHash, "author"]
+  );
+
+  await run(
+    "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+    ["Reviewer User", reviewerEmail, passwordHash, "reviewer"]
+  );
+
+  await run("INSERT OR IGNORE INTO expertise_profiles (user_id) VALUES (?)", [
+    authorResult.id,
+  ]);
+
+  await run(
+    "INSERT INTO knowledge_assets (title, description, status, owner_user_id, keywords, workspace_id) VALUES (?, ?, 'pending_review', ?, ?, ?)",
+    [
+      "Quarterly Insight Report",
+      "Sample asset seeded for reviewer workflow testing.",
+      authorResult.id,
+      "finance,insights,report",
+      1,
+    ]
+  );
+};
 
 
 db.serialize(() => {
@@ -123,6 +160,7 @@ db.serialize(() => {
     await run("UPDATE users SET role = lower(role)");
     await run("UPDATE knowledge_assets SET status = lower(status)");
     await run("UPDATE knowledge_assets SET status = 'pending_review' WHERE status IN ('pendingreview')");
+    await seedIfEmpty();
   }).catch((err) => {
     console.error("Migration failed", err);
   });
