@@ -3,7 +3,7 @@ name: pages build and deployment
 on:
   push:
     branches:
-      - main
+      - gh-pages
   workflow_dispatch:
 
 permissions:
