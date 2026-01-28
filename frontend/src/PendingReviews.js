@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import NavBar from "./NavBar";
 import { governanceApi, workspacesApi } from "./api";
 
@@ -10,14 +10,14 @@ function PendingReviews() {
   const [workspaces, setWorkspaces] = useState([]);
   const [workspaceFilter, setWorkspaceFilter] = useState("");
 
-  const loadWorkspaces = () => {
+  const loadWorkspaces = useCallback(() => {
     workspacesApi
       .list()
       .then((data) => setWorkspaces(data.workspaces || []))
       .catch(() => setWorkspaces([]));
-  };
+  }, []);
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true);
     setError("");
     governanceApi
@@ -25,16 +25,16 @@ function PendingReviews() {
       .then((data) => setAssets(data.assets || []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  };
+  }, [workspaceFilter]);
 
   useEffect(() => {
     load();
     loadWorkspaces();
-  }, []);
+  }, [load, loadWorkspaces]);
 
   useEffect(() => {
     load();
-  }, [workspaceFilter]);
+  }, [load]);
 
   const handleApprove = async (id) => {
     setMessage("");

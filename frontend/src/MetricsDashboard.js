@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import NavBar from "./NavBar";
 import { authApi, metricsApi } from "./api";
 
@@ -17,7 +17,7 @@ function MetricsDashboard() {
       .catch(() => setRole(""));
   }, []);
 
-  const loadMetrics = () => {
+  const loadMetrics = useCallback(() => {
     setLoading(true);
     setError("");
     metricsApi
@@ -25,11 +25,11 @@ function MetricsDashboard() {
       .then((data) => setMetrics(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  };
+  }, [from, to]);
 
   useEffect(() => {
     loadMetrics();
-  }, []);
+  }, [loadMetrics]);
 
   const isReviewer = ["reviewer", "admin"].includes(role.toLowerCase());
 
